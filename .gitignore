@@ -6,6 +6,7 @@
 *.hex
 *.lst
 *.map
+*.ld
 
 # Makefile dependencies
 dep/

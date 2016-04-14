@@ -1,0 +1,11 @@
+STM32L1 Value line Discovery board supports with STM32Cube_FW_L1_V1.5.0.
+
+Download en.stm32cubel1.zip from ST and put it to ../
+http://www2.st.com/content/st_com/en/products/embedded-software/mcus-embedded-software/stm32-embedded-software/stm32cube-embedded-software/stm32cubel1.html#
+
+make template
+
+make all
+
+st-flash write demo.bin 0x8000000
+

@@ -17,33 +17,35 @@
 # Link		http://www.steffenvogel.de
 #
 # edited for the STM32F4-Discovery
+#
+# edited for the STM32L1-Discovery
 
 # A name common to all output files (elf, map, hex, bin, lst)
 TARGET     = demo
 
 # Take a look into $(CUBE_DIR)/Drivers/BSP for available BSPs
-BOARD      = STM32F4-Discovery
-BSP_BASE   = stm32f4_discovery
+BOARD      = STM32L100C-Discovery
+BSP_BASE   = stm32l100c_discovery
 
-OCDFLAGS   = -f board/stm32f4discovery.cfg
+OCDFLAGS   = -f board/stm32l1discovery.cfg
 GDBFLAGS   =
 
-#EXAMPLE   = Templates
-EXAMPLE    = Examples/GPIO/GPIO_EXTI
+EXAMPLE   = Templates
+#EXAMPLE    = Examples/GPIO/GPIO_EXTI
 
 # MCU family and type in various capitalizations o_O
-MCU_FAMILY = stm32f4xx
-MCU_LC     = stm32f401xc
-MCU_MC     = STM32F407xx
-MCU_UC     = STM32F407VG
+MCU_FAMILY = stm32l1xx
+MCU_LC     = stm32l100xc
+MCU_MC     = STM32L100xC
+MCU_UC     = STM32L100RC
 
 # Your C files from the /src directory
 SRCS       = main.c
 SRCS      += system_$(MCU_FAMILY).c
-SRCS      += stm32f4xx_it.c
+SRCS      += stm32l1xx_it.c
 
 # Basic HAL libraries
-SRCS      += stm32f4xx_hal_rcc.c stm32f4xx_hal_rcc_ex.c stm32f4xx_hal.c stm32f4xx_hal_cortex.c stm32f4xx_hal_gpio.c $(BSP_BASE).c
+SRCS      += stm32l1xx_hal_rcc.c stm32l1xx_hal_rcc_ex.c stm32l1xx_hal_pwr_ex.c stm32l1xx_hal.c stm32l1xx_hal_cortex.c stm32l1xx_hal_gpio.c $(BSP_BASE).c
 
 # Directories
 OCD_DIR    = /usr/share/openocd/scripts
@@ -51,12 +53,12 @@ OCD_DIR    = /usr/share/openocd/scripts
 CUBE_DIR   = cube
 
 BSP_DIR    = $(CUBE_DIR)/Drivers/BSP/$(BOARD)
-HAL_DIR    = $(CUBE_DIR)/Drivers/STM32F4xx_HAL_Driver
+HAL_DIR    = $(CUBE_DIR)/Drivers/STM32L1xx_HAL_Driver
 CMSIS_DIR  = $(CUBE_DIR)/Drivers/CMSIS
 
-DEV_DIR    = $(CMSIS_DIR)/Device/ST/STM32F4xx
+DEV_DIR    = $(CMSIS_DIR)/Device/ST/STM32L1xx
 
-CUBE_URL   = http://www.st.com/st-web-ui/static/active/en/st_prod_software_internet/resource/technical/software/firmware/stm32cubef4.zip
+#CUBE_URL   = http://www.st.com/st-web-ui/static/active/en/st_prod_software_internet/resource/technical/software/firmware/stm32cubef4.zip
 
 # that's it, no need to change anything below this line!
 
@@ -93,17 +95,17 @@ INCS      += -I$(HAL_DIR)/Inc
 LIBS       = -L$(CMSIS_DIR)/Lib
 
 # Compiler flags
-CFLAGS     = -Wall -g -std=c99 -Os
-CFLAGS    += -mlittle-endian -mcpu=cortex-m4 -march=armv7e-m -mthumb
-CFLAGS    += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
+CFLAGS     = -Wall -g -std=c11 -Os
+CFLAGS    += -mcpu=cortex-m3 -mthumb -msoft-float
+#CFLAGS    += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 CFLAGS    += -ffunction-sections -fdata-sections
 CFLAGS    += $(INCS) $(DEFS)
 
 # Linker flags
-LDFLAGS    = -Wl,--gc-sections -Wl,-Map=$(TARGET).map $(LIBS) -T$(MCU_LC).ld
+LDFLAGS    = -Wl,--gc-sections -Wl,-Map=$(TARGET).map $(LIBS) -T$(MCU_LC).ld -mfix-cortex-m3-ldrd
 
 # Enable Semihosting
-LDFLAGS   += --specs=rdimon.specs -lc -lrdimon
+#LDFLAGS   += --specs=rdimon.specs -lc -lrdimon
 
 # Source search paths
 VPATH      = ./src
@@ -145,6 +147,7 @@ $(TARGET).elf: $(OBJS)
 	$Q$(OBJDUMP) -St $(TARGET).elf >$(TARGET).lst
 	@echo "[SIZE]    $(TARGET).elf"
 	$(SIZE) $(TARGET).elf
+	$(OBJCOPY) -O binary $(TARGET).elf $(TARGET).bin
 
 openocd:
 	$(OCD) -s $(OCD_DIR) $(OCDFLAGS)
@@ -166,11 +169,11 @@ debug:
 
 cube:
 	rm -fr $(CUBE_DIR)
-	wget -O /tmp/cube.zip $(CUBE_URL)
-	unzip /tmp/cube.zip
+	#wget -O /tmp/cube.zip $(CUBE_URL)
+	unzip ../en.stm32cubel1.zip
 	mv STM32Cube* $(CUBE_DIR)
 	chmod -R u+w $(CUBE_DIR)
-	rm -f /tmp/cube.zip
+	#rm -f /tmp/cube.zip
 
 template: cube src
 	cp -ri $(CUBE_DIR)/Projects/$(BOARD)/$(EXAMPLE)/Src/* src
@@ -182,6 +185,7 @@ clean:
 	@echo "[RM]      $(TARGET).elf"; rm -f $(TARGET).elf
 	@echo "[RM]      $(TARGET).map"; rm -f $(TARGET).map
 	@echo "[RM]      $(TARGET).lst"; rm -f $(TARGET).lst
+	@echo "[RM]      $(TARGET).bin"; rm -f $(TARGET).bin
 	@echo "[RMDIR]   dep"          ; rm -fr dep
 	@echo "[RMDIR]   obj"          ; rm -fr obj
 
