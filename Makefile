@@ -40,7 +40,8 @@ MCU_MC     = STM32L100xC
 MCU_UC     = STM32L100RC
 
 # Your C files from the /src directory
-SRCS       = main.c
+SRCS       = main.c 
+SRCS	  += stm32l1xx_hal_msp.c
 SRCS      += system_$(MCU_FAMILY).c
 SRCS      += stm32l1xx_it.c
 
